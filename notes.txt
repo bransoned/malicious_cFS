@@ -1,0 +1,9 @@
+So I think to build a stux net app, I need to find a way for sample_app to
+gain all the message id's of other processes and then subscribe to them
+
+After that I then need to figure out a way to where I 
+can show this data. For now i think just send it to the output buffer
+maybe like everytime sample comes in rotation is spits out 
+everything on the buffer
+
+
