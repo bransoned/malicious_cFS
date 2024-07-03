@@ -1,3 +1,6 @@
+# Malicious cFS Implementation Notes
+All security breaches and attacks are implemented in the sample app of their corresponding branch (for now).
+
 [![Build Linux](https://github.com/nasa/cfs/actions/workflows/build-cfs.yml/badge.svg)](https://github.com/nasa/cfs/actions/workflows/build-cfs.yml)
 [![Build RTEMS 5](https://github.com/nasa/cFS/actions/workflows/build-cfs-rtems5.yml/badge.svg)](https://github.com/nasa/cFS/actions/workflows/build-cfs-rtems5.yml)
 
