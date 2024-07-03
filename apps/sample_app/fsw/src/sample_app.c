@@ -65,12 +65,38 @@ void SAMPLE_APP_Main(void)
         SAMPLE_APP_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
     }
 
+
+    CFE_EVS_SendEvent(SAMPLE_APP_PIPE_ERR_EID, CFE_EVS_EventType_ERROR,
+                              "SAMPLE APP: TEST TEST TEST - PipeID, %d\n", SAMPLE_APP_Data.CommandPipe);
+
     /*
     ** Sample App Runloop
     */
     while (CFE_ES_RunLoop(&SAMPLE_APP_Data.RunStatus) == true)
     {
+        /*
+        ** Keep track of how many pipes have been searched for
+        */
+        static int counter = 0;
 
+        // Not sure if this is system specific, but cFS counts on my system start here
+        // and then continue to MAX_PIPES
+        int potential_id = 1441793;
+
+        char potential_name[CFE_MISSION_MAX_API_LEN];
+
+        // Max number of pipes is 64, so no need to go higher
+        if (counter <= 64)
+        {
+ //           CFE_ES_WriteToSysLog("This is new pipe num - %u\n\n", (unsigned int)CFE_ResourceId_FromInteger(potential_id + counter));
+
+            CFE_Status_t name_stat = CFE_SB_GetPipeName(potential_name, CFE_MISSION_MAX_API_LEN, CFE_ResourceId_FromInteger(potential_id + counter));
+            if (name_stat == CFE_SUCCESS)
+            {
+                CFE_ES_WriteToSysLog("Sample App: Name is - %s\n", potential_name);
+            }
+            ++counter;
+        }
         /*
         ** Performance Log Exit Stamp
         */
@@ -131,6 +157,7 @@ CFE_Status_t SAMPLE_APP_Init(void)
     /*
     ** Register the events
     */
+
     status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
     if (status != CFE_SUCCESS)
     {
@@ -185,7 +212,7 @@ CFE_Status_t SAMPLE_APP_Init(void)
         ** Currently need to figure out way to go past 0x1900, needs to go to 0x1FFF (NOS3 uses into the 1900s)
         ** Get squelched when trying to do too many at one time. Can uncomment status check if needed
         */
-        for (int attempt = 0x1800; attempt < 0x1900; attempt++)
+        for (int attempt = 0x1800; attempt < 0x19F0; attempt++)
         {
             //int newStatus =
             CFE_SB_Subscribe(CFE_SB_ValueToMsgId(attempt), SAMPLE_APP_Data.CommandPipe);

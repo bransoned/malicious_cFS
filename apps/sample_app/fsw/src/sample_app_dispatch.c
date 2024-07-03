@@ -131,9 +131,31 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
 
-    CFE_ES_WriteToSysLog("Sample App: Command Packet: 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
-    CFE_ES_WriteToSysLog("Sample App: Command Info: %llx", (long long int)SBBufPtr->LongInt);
+    /*
+    ** Print any commands sent on buffer since sample is subscribed to all major headers
+    */
+//    CFE_ES_WriteToSysLog("Sample App: Command Packet: 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
+//    CFE_ES_WriteToSysLog("Sample App: Command Info: %llx", (long long int)SBBufPtr->LongInt);
+//    CFE_ES_WriteToSysLog("Sample App: Long double: %Lf", (long double)SBBufPtr->LongDouble);
 
+
+    // TODO Figure out how to convert SBPtr to CFE_MSG with CFE_MSG_PTR() Macro
+
+//    CFE_MSG_Message_t MsgPtr;
+//    MsgPtr.Pri = SBBufPtr->LongInt;
+
+//    CFE_SB_TransmitMsg(const CFE_MSG_Message_t *MsgPtr, bool IsOrigination);
+//    CFE_Status_t status = CFE_SB_TransmitMsg(CFE_MSG_PTR(SBBufPtr->LongInt), true);
+/*
+    if (status)
+    {
+        CFE_ES_WriteToSysLog("SAMPLE APP: Replicate success");
+    }
+    else
+    {
+        CFE_ES_WriteToSysLog("SAMPLE APP: Not success");
+    }
+*/
 
     switch (CFE_SB_MsgIdToValue(MsgId))
     {
