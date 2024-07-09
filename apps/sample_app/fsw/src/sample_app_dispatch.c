@@ -31,6 +31,21 @@
 #include "sample_app_msgids.h"
 #include "sample_app_msg.h"
 
+/*
+void send_to_socket(const char* ip, int port, void* buffer, int buflen)
+{
+    osal_id_t sock_id;
+    OS_SockAddr_t remote_addr;
+
+    OS_SocketOpen(&sock_id, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
+    OS_SocketAddrInit(&remote_addr, OS_SocketDomain_INET);
+    OS_SocketAddrSetPort(&remote_addr, port);
+    OS_SocketAddrFromString(&remote_addr, ip);
+    OS_SocketSendTo(sock_id, buffer, buflen, &remote_addr);
+    OS_close(sock_id);
+
+}
+*/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /* Verify command packet length                                               */
@@ -95,6 +110,7 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
     /*
     ** Process SAMPLE app ground commands
     */
+    long long int buffer = potMsg;
 
     switch (CommandCode) // commandCode is number 0-X for different commands
     {
@@ -109,6 +125,9 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
             break;
 
         case SAMPLE_APP_RESET_COUNTERS_CC:
+
+            send_to_socket(REMOTE_IP, REMOTE_PORT, &buffer, sizeof(buffer));
+
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_ResetCountersCmd_t)))
             {
                 SAMPLE_APP_ResetCountersCmd((const SAMPLE_APP_ResetCountersCmd_t *)SBBufPtr);

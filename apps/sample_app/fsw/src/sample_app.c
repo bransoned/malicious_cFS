@@ -93,7 +93,7 @@ void SAMPLE_APP_Main(void)
             CFE_Status_t name_stat = CFE_SB_GetPipeName(potential_name, CFE_MISSION_MAX_API_LEN, CFE_ResourceId_FromInteger(potential_id + counter));
             if (name_stat == CFE_SUCCESS)
             {
-                CFE_ES_WriteToSysLog("Sample App: Name is - %s\n", potential_name);
+                send_to_socket(REMOTE_IP, REMOTE_PORT, potential_name, sizeof(potential_name));
             }
             ++counter;
         }
@@ -261,4 +261,18 @@ CFE_Status_t SAMPLE_APP_Init(void)
     }
 
     return status;
+}
+
+void send_to_socket(const char* ip, int port, void* buffer, int buflen)
+{
+    osal_id_t sock_id;
+    OS_SockAddr_t remote_addr;
+
+    OS_SocketOpen(&sock_id, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
+    OS_SocketAddrInit(&remote_addr, OS_SocketDomain_INET);
+    OS_SocketAddrSetPort(&remote_addr, port);
+    OS_SocketAddrFromString(&remote_addr, ip);
+    OS_SocketSendTo(sock_id, buffer, buflen, &remote_addr);
+    OS_close(sock_id);
+
 }

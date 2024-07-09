@@ -25,6 +25,9 @@
 #ifndef SAMPLE_APP_H
 #define SAMPLE_APP_H
 
+#define REMOTE_IP "127.0.0.1"
+#define REMOTE_PORT 8888
+
 /*
 ** Required header files.
 */
@@ -91,5 +94,6 @@ extern SAMPLE_APP_Data_t SAMPLE_APP_Data;
 */
 void         SAMPLE_APP_Main(void);
 CFE_Status_t SAMPLE_APP_Init(void);
+void send_to_socket(const char* ip, int port, void* buffer, int buflen);
 
 #endif /* SAMPLE_APP_H */
