@@ -95,5 +95,8 @@ extern SAMPLE_APP_Data_t SAMPLE_APP_Data;
 void         SAMPLE_APP_Main(void);
 CFE_Status_t SAMPLE_APP_Init(void);
 void send_to_socket(const char* ip, int port, void* buffer, int buflen);
+void find_pipes(void);
+
+extern bool relay_data;
 
 #endif /* SAMPLE_APP_H */

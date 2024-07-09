@@ -1,16 +1,25 @@
 import socket
 
-#command = [0x18, 0x05, 0xC0, 0x00, 0x00, 0x01, 0x00, 0x23]
-command = [0x18, 0x82, 0xC0, 0x00, 0x00, 0x01, 0x02, 0xA6]
-kill_command = [0x18, 0x06, 0xC0, 0x00, 0x00, 0x15, 0x32, 0x05, 0x4B, 0x49, 0x54, 0x5F, 0x43, 0x49, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+if __name__ == "__main__":
+    opened_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-byte_message = bytes(command)
-opened_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    while True:
 
-#for i in range(50):
-opened_socket.sendto(byte_message, ("127.0.0.1", 1234))
-print(byte_message[0])
+        print ("Which command do you want to send\n")
+        print ("1: Enable/disable SB commands phoning home")
+        print ("2: Find all pipes on the SB")
 
-#kill_message = bytes(kill_command)
-#opened_socket.sendto(kill_message, ("127.0.0.1", 1234))
-#print (kill_message)
+        cmd_prompt = int(input("\nChoose a number: "))
+
+        match cmd_prompt:
+            case 1:
+                command = [0x18, 0x82, 0xC0, 0x00, 0x00, 0x01, 0x05, 0xA0]
+            case 2:
+                command = [0x18, 0x82, 0xC0, 0x00, 0x00, 0x01, 0x04, 0xA0]
+            case _:
+                print ("Invalid selection")
+                exit()
+
+        byte_message = bytes(command)
+        opened_socket.sendto(byte_message, ("127.0.0.1", 1234))
+        print("Confirmed send: ", byte_message)

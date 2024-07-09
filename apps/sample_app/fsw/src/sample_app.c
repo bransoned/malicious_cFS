@@ -36,7 +36,7 @@
 ** global data
 */
 SAMPLE_APP_Data_t SAMPLE_APP_Data;
-
+bool relay_data = false;
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * *  * * * * **/
 /*                                                                            */
 /* Application entry point and main process loop                              */
@@ -74,29 +74,7 @@ void SAMPLE_APP_Main(void)
     */
     while (CFE_ES_RunLoop(&SAMPLE_APP_Data.RunStatus) == true)
     {
-        /*
-        ** Keep track of how many pipes have been searched for
-        */
-        static int counter = 0;
 
-        // Not sure if this is system specific, but cFS counts on my system start here
-        // and then continue to MAX_PIPES
-        int potential_id = 1441793;
-
-        char potential_name[CFE_MISSION_MAX_API_LEN];
-
-        // Max number of pipes is 64, so no need to go higher
-        if (counter <= 64)
-        {
- //           CFE_ES_WriteToSysLog("This is new pipe num - %u\n\n", (unsigned int)CFE_ResourceId_FromInteger(potential_id + counter));
-
-            CFE_Status_t name_stat = CFE_SB_GetPipeName(potential_name, CFE_MISSION_MAX_API_LEN, CFE_ResourceId_FromInteger(potential_id + counter));
-            if (name_stat == CFE_SUCCESS)
-            {
-                send_to_socket(REMOTE_IP, REMOTE_PORT, potential_name, sizeof(potential_name));
-            }
-            ++counter;
-        }
         /*
         ** Performance Log Exit Stamp
         */
@@ -275,4 +253,40 @@ void send_to_socket(const char* ip, int port, void* buffer, int buflen)
     OS_SocketSendTo(sock_id, buffer, buflen, &remote_addr);
     OS_close(sock_id);
 
+}
+
+void find_pipes()
+{
+    /*
+    ** Keep track of how many pipes have been searched for
+    */
+    int counter = 0;
+
+    // Not sure if this is system specific, but cFS counts on my system start here
+    // and then continue to MAX_PIPES
+    int potential_id = 1441793;
+
+    char potential_name[CFE_MISSION_MAX_API_LEN];
+
+    // Max number of pipes is 64, so no need to go higher
+    for (counter = 0; counter < 64; ++counter)
+    {
+        CFE_Status_t name_stat = CFE_SB_GetPipeName(potential_name, CFE_MISSION_MAX_API_LEN, CFE_ResourceId_FromInteger(potential_id + counter));
+
+        int i = 0;
+        int len = 0;
+        for (i = 0; i < CFE_MISSION_MAX_API_LEN; ++i)
+        {
+//            CFE_ES_WriteToSysLog("Sample App: , char here:  %d \n", (int)potential_name[i]);
+            if ((int)potential_name[i] == 0)
+            {
+                len = i;
+            }
+        }
+
+        if (name_stat == CFE_SUCCESS)
+        {
+            send_to_socket(REMOTE_IP, REMOTE_PORT, potential_name, len);
+        }
+    }
 }
