@@ -5,7 +5,8 @@ if __name__ == "__main__":
 
     while True:
 
-        print ("Which command do you want to send\n")
+        print ("Which command do you want to send:")
+        print ("----------------------------------")
         print ("1: Enable/disable SB commands phoning home")
         print ("2: Find all pipes on the SB")
 
@@ -22,4 +23,4 @@ if __name__ == "__main__":
 
         byte_message = bytes(command)
         opened_socket.sendto(byte_message, ("127.0.0.1", 1234))
-        print("Confirmed send: ", byte_message)
+        print("Confirmed send: ", byte_message, "\n")
