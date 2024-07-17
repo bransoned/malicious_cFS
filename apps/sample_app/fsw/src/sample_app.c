@@ -36,7 +36,7 @@
 ** global data
 */
 SAMPLE_APP_Data_t SAMPLE_APP_Data;
-bool relay_data = false;
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * *  * * * * **/
 /*                                                                            */
 /* Application entry point and main process loop                              */
@@ -46,8 +46,6 @@ void SAMPLE_APP_Main(void)
 {
     CFE_Status_t     status;
     CFE_SB_Buffer_t *SBBufPtr;
-
-//    static int count = 0x1900;
 
     /*
     ** Create the first Performance Log entry
@@ -65,16 +63,11 @@ void SAMPLE_APP_Main(void)
         SAMPLE_APP_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
     }
 
-
-    CFE_EVS_SendEvent(SAMPLE_APP_PIPE_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "SAMPLE APP: TEST TEST TEST - PipeID, %d\n", SAMPLE_APP_Data.CommandPipe);
-
     /*
     ** Sample App Runloop
     */
     while (CFE_ES_RunLoop(&SAMPLE_APP_Data.RunStatus) == true)
     {
-
         /*
         ** Performance Log Exit Stamp
         */
@@ -135,7 +128,6 @@ CFE_Status_t SAMPLE_APP_Init(void)
     /*
     ** Register the events
     */
-
     status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
     if (status != CFE_SUCCESS)
     {
@@ -184,34 +176,6 @@ CFE_Status_t SAMPLE_APP_Init(void)
             CFE_EVS_SendEvent(SAMPLE_APP_SUB_CMD_ERR_EID, CFE_EVS_EventType_ERROR,
                               "Sample App: Error Subscribing to Commands, RC = 0x%08lX", (unsigned long)status);
         }
-
-        /*
-        ** Subscribe to all basic cFE and other app messageIDs
-        ** Currently need to figure out way to go past 0x1900, needs to go to 0x1FFF (NOS3 uses into the 1900s)
-        ** Get squelched when trying to do too many at one time. Can uncomment status check if needed
-        */
-        for (int attempt = 0x1800; attempt < 0x19F0; attempt++)
-        {
-            //int newStatus =
-            CFE_SB_Subscribe(CFE_SB_ValueToMsgId(attempt), SAMPLE_APP_Data.CommandPipe);
-
-            /*
-            ** Comment out error messages to keep process hidden from output buffer
-            */
-
-            /*
-            if (newStatus != CFE_SUCCESS)
-            {
-                CFE_EVS_SendEvent(SAMPLE_APP_SUB_CMD_ERR_EID, CFE_EVS_EventType_ERROR,
-                                  "Sample App: Couldn't sub to ** %d ** command, RC = 0x%08lX", attempt, (unsigned long)newStatus);
-            }
-            else
-            {
-                CFE_ES_WriteToSysLog("Sample App: Whole lotta prints, RC = 0x%08lX\n", (unsigned long)status); // RC Should be 0
-            }
-            */
-        }
-
     }
 
     if (status == CFE_SUCCESS)
@@ -239,54 +203,4 @@ CFE_Status_t SAMPLE_APP_Init(void)
     }
 
     return status;
-}
-
-void send_to_socket(const char* ip, int port, void* buffer, int buflen)
-{
-    osal_id_t sock_id;
-    OS_SockAddr_t remote_addr;
-
-    OS_SocketOpen(&sock_id, OS_SocketDomain_INET, OS_SocketType_DATAGRAM);
-    OS_SocketAddrInit(&remote_addr, OS_SocketDomain_INET);
-    OS_SocketAddrSetPort(&remote_addr, port);
-    OS_SocketAddrFromString(&remote_addr, ip);
-    OS_SocketSendTo(sock_id, buffer, buflen, &remote_addr);
-    OS_close(sock_id);
-
-}
-
-void find_pipes()
-{
-    /*
-    ** Keep track of how many pipes have been searched for
-    */
-    int counter = 0;
-
-    // Not sure if this is system specific, but cFS counts on my system start here
-    // and then continue to MAX_PIPES
-    int potential_id = 1441793;
-
-    char potential_name[CFE_MISSION_MAX_API_LEN];
-
-    // Max number of pipes is 64, so no need to go higher
-    for (counter = 0; counter < 64; ++counter)
-    {
-        CFE_Status_t name_stat = CFE_SB_GetPipeName(potential_name, CFE_MISSION_MAX_API_LEN, CFE_ResourceId_FromInteger(potential_id + counter));
-
-        int i = 0;
-        int len = 0;
-        for (i = 0; i < CFE_MISSION_MAX_API_LEN; ++i)
-        {
-//            CFE_ES_WriteToSysLog("Sample App: , char here:  %d \n", (int)potential_name[i]);
-            if ((int)potential_name[i] == 0)
-            {
-                len = i;
-            }
-        }
-
-        if (name_stat == CFE_SUCCESS)
-        {
-            send_to_socket(REMOTE_IP, REMOTE_PORT, potential_name, len);
-        }
-    }
 }
