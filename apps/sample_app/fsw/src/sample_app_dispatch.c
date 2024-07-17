@@ -31,6 +31,8 @@
 #include "sample_app_msgids.h"
 #include "sample_app_msg.h"
 
+//#include "cfe_time_module_all.h"
+#include "cfe_time_utils.h"
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /* Verify command packet length                                               */
@@ -110,8 +112,26 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
             }
             break;
 
+        CFE_TIME_SysTime_t CurTime;
+        CFE_TIME_SysTime_t NewTime;
+        static int SpeedUp = 12;
+        // Receive command from GSW to set the sat time to a new random time
+        case SAMPLE_APP_NEW_TIME:
+            CurTime = CFE_TIME_GetTime();
+
+            NewTime = CurTime;
+            NewTime.Seconds += SpeedUp;
+            CFE_TIME_SetTime(NewTime);
+
+//            CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Just testing rn. Time randomized command will go here code: CC = %d",
+//                              CurTime.Seconds);
+            break;
+
+
         /* default case already found during FC vs length test */
         default:
+
+
             CFE_EVS_SendEvent(SAMPLE_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR, "Invalid ground command code: CC = %d",
                               CommandCode);
             break;

@@ -31,6 +31,9 @@
 #include "cfe.h"
 #include "sample_app_msg.h"
 
+//#include "cfe_time_module_all.h"
+
+
 void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr);
 void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr);
 bool SAMPLE_APP_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);

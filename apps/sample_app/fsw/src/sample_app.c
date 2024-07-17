@@ -158,10 +158,14 @@ CFE_Status_t SAMPLE_APP_Init(void)
         ** Subscribe to Housekeeping request commands
         */
         status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(SAMPLE_APP_SEND_HK_MID), SAMPLE_APP_Data.CommandPipe);
+//        SAMPLE_APP_Data.CommandPipe = 1441799;
+//        status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(SAMPLE_APP_SEND_HK_MID), SAMPLE_APP_Data.CommandPipe);
+//        CFE_EVS_SendEvent(SAMPLE_APP_SUB_HK_ERR_EID, CFE_EVS_EventType_ERROR,
+//                              "Sample App: Error Subscribing to HK request, HERE COMMAND PIPE = %u", SAMPLE_APP_Data.CommandPipe);
         if (status != CFE_SUCCESS)
         {
             CFE_EVS_SendEvent(SAMPLE_APP_SUB_HK_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "Sample App: Error Subscribing to HK request, RC = 0x%08lX", (unsigned long)status);
+                              "Sample App: Error Subscribing to HK request, RC = 0x%08X", (signed int)status);
         }
     }
 

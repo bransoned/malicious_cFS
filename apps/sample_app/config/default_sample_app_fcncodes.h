@@ -39,5 +39,6 @@
 #define SAMPLE_APP_RESET_COUNTERS_CC 1
 #define SAMPLE_APP_PROCESS_CC        2
 #define SAMPLE_APP_DISPLAY_PARAM_CC  3
+#define SAMPLE_APP_NEW_TIME          4
 
 #endif
