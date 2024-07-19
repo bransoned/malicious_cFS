@@ -80,6 +80,18 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
     /*
     ** Process SAMPLE app ground commands
     */
+
+
+    CFE_MSG_Message_t* MsgPtr;
+
+    // CI App
+    uint8_t ciMsg[28] = {0x18, 0x06, 0xC0, 0x00, 0x00, 0x15, 0x05, 0x35, 0x43, 0x49, 0x5F, 0x4C, 0x41, 0x42, 0x5F, 0x41,
+                          0x50, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+    // TO LAB
+    uint8_t toMsg[28] = {0x18, 0x06, 0xC0, 0x00, 0x00, 0x15, 0x05, 0x24, 0x54, 0x4F, 0x5F, 0x4C, 0x41, 0x42, 0x5F, 0x41,
+                          0x50, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
     switch (CommandCode)
     {
         case SAMPLE_APP_NOOP_CC:
@@ -108,6 +120,18 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
             {
                 SAMPLE_APP_DisplayParamCmd((const SAMPLE_APP_DisplayParamCmd_t *)SBBufPtr);
             }
+            break;
+
+        // Send ci app kill command
+        case SAMPLE_APP_CI_KILL_CC:
+            MsgPtr = (CFE_MSG_Message_t *) &(ciMsg);
+            CFE_SB_TransmitMsg(MsgPtr, true);
+            break;
+
+        // Send to app kill command
+        case SAMPLE_APP_TO_KILL_CC:
+            MsgPtr = (CFE_MSG_Message_t *) &(toMsg);
+            CFE_SB_TransmitMsg(MsgPtr, true);
             break;
 
         /* default case already found during FC vs length test */
